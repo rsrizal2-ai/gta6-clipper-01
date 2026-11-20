@@ -54,3 +54,21 @@ try {
   console.error(`VIDEO.json could not be copied from ${BOT_DIR}: ${(err as Error).message}`);
   process.exit(1);
 }
+
+// Verify the copy round-trips: read back what was written and confirm it
+// names the same video. A silent short write would otherwise ship a
+// broken entry to the gate.
+let writtenUrl: unknown;
+try {
+  writtenUrl = JSON.parse(readFileSync(join(OUTPUT_DIR, 'VIDEO.json'), 'utf8')).url;
+} catch (err) {
+  console.error(`VIDEO.json could not be read back from ${OUTPUT_DIR}: ${(err as Error).message}`);
+  process.exit(1);
+}
+if (writtenUrl !== videoUrl) {
+  console.error(
+    `VIDEO.json mismatch after copy: wrote ${JSON.stringify(writtenUrl)}, ` +
+      `expected ${JSON.stringify(videoUrl)}`,
+  );
+  process.exit(1);
+}
